@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poké Cards | Loja de cartas</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <header class="topo">
+        <a class="marca" href="#inicio"><span class="marca-bola">◓</span><span>POKÉ<span>CARDS</span></span></a>
+        <nav aria-label="Navegação principal"><a href="#inicio">Início</a><a href="#colecao">Coleção</a><a href="#rodape">Sobre a loja</a></nav>
+        <button class="botao-carrinho" id="abrir-carrinho" aria-label="Abrir carrinho">Carrinho <strong id="carrinho-count">0</strong></button>
+    </header>
+
+    <main id="inicio">
+        <section class="faixa-intro">
+            <div><p class="eyebrow">ESTAMPAS ILUSTRADAS · SÉRIE KANTO</p><h1>Encontre sua<br><em>próxima carta rara.</em></h1><p class="intro-text">Uma seleção especial de cards para começar ou evoluir sua coleção.</p></div>
+            <div class="selo">★<small>COLEÇÃO<br>ORIGINAL</small></div>
+        </section>
+        <section class="catalogo" id="colecao">
+            <div class="catalogo-topo"><div><p class="eyebrow">CATÁLOGO DA SEMANA</p><h2>Cards em destaque</h2></div><label class="busca"><span>⌕</span><input type="search" id="pesquisa-input" placeholder="Buscar por nome..."></label></div>
+            <div class="container-pai" id="produtos"></div>
+        </section>
+    </main>
+
+    <aside class="carrinho" id="carrinho" aria-label="Seu carrinho">
+        <div class="carrinho-cabecalho"><div><p class="eyebrow">SUA COLEÇÃO</p><h2>Seu carrinho</h2></div><button class="fechar" id="fechar-carrinho" aria-label="Fechar carrinho">×</button></div>
+        <div class="itens-carrinho" id="itens-carrinho"><p class="carrinho-vazio">Seu carrinho está vazio.<br><span>Escolha um card para começar.</span></p></div>
+        <div class="resumo"><div><span>Subtotal</span><strong id="subtotal">R$ 0,00</strong></div><div><span>Frete</span><strong id="frete">R$ 0,00</strong></div><div class="total"><span>Total</span><strong id="total">R$ 0,00</strong></div><button class="botao-principal" id="finalizar" disabled>Finalizar compra <span>→</span></button></div>
+    </aside>
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo"><button class="fechar" id="fechar-modal">×</button><p class="eyebrow">CHECKOUT SEGURO</p><h2 id="modal-titulo">Quase lá!</h2><p>Preencha seus dados para reservar sua coleção.</p><form id="checkout"><input required placeholder="Nome completo"><input required type="email" placeholder="Seu melhor e-mail"><input required placeholder="Endereço de entrega"><button class="botao-principal" type="submit">Confirmar pedido <span>→</span></button></form></div>
+    <footer id="rodape"><strong>POKÉ<span>CARDS</span></strong><span>Cards selecionados para treinadores e colecionadores.</span><span>Compra 100% segura · Envio para todo o Brasil</span></footer>
+    <script>
+        const produtos = [
+            ['Bulbasaur','001','Planta · Básico','24,90','001.png'], ['Ivysaur','002','Planta · Estágio 1','34,90','002.png'], ['Venusaur','003','Planta · Estágio 2','59,90','003.png'], ['Charmander','004','Fogo · Básico','29,90','004.png'], ['Charmeleon','005','Fogo · Estágio 1','39,90','005.png'], ['Charizard','006','Fogo · Estágio 2','89,90','006.png'], ['Squirtle','007','Água · Básico','24,90','007.png'], ['Wartortle','008','Água · Estágio 1','34,90','008.png']
+        ];
+        const carrinho = [];
+        const dinheiro = valor => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const produtosEl = document.querySelector('#produtos');
+        const renderProdutos = (filtro = '') => produtosEl.innerHTML = produtos.filter(p => p[0].toLowerCase().includes(filtro.toLowerCase())).map(p => `<article class="card"><div class="tag">${p[2]}</div><img src="https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/detail/${p[4]}" alt="Carta de ${p[0]}"><div class="card-info"><span class="numero">#${p[1]}</span><h3>${p[0]}</h3><strong>R$ ${p[3]}</strong></div><button class="adicionar" data-nome="${p[0]}">Adicionar ao carrinho <span>+</span></button></article>`).join('') || '<p class="sem-resultados">Nenhum card encontrado.</p>';
+        const atualizar = () => { const subtotal = carrinho.reduce((s, item) => s + item.preco * item.qtd, 0); document.querySelector('#carrinho-count').textContent = carrinho.reduce((s, i) => s + i.qtd, 0); document.querySelector('#subtotal').textContent = dinheiro(subtotal); document.querySelector('#frete').textContent = subtotal ? (subtotal >= 100 ? 'Grátis' : dinheiro(12)) : dinheiro(0); document.querySelector('#total').textContent = dinheiro(subtotal + (subtotal && subtotal < 100 ? 12 : 0)); document.querySelector('#finalizar').disabled = !carrinho.length; document.querySelector('#itens-carrinho').innerHTML = carrinho.length ? carrinho.map(i => `<div class="item"><img src="https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/detail/${i.imagem}" alt=""><div><strong>${i.nome}</strong><small>${dinheiro(i.preco)}</small><div class="quantidade"><button data-acao="menos" data-nome="${i.nome}">−</button><span>${i.qtd}</span><button data-acao="mais" data-nome="${i.nome}">+</button><button class="remover" data-acao="remover" data-nome="${i.nome}">Remover</button></div></div><b>${dinheiro(i.preco * i.qtd)}</b></div>`).join('') : '<p class="carrinho-vazio">Seu carrinho está vazio.<br><span>Escolha um card para começar.</span></p>'; };
+        produtosEl.addEventListener('click', e => { const botao = e.target.closest('.adicionar'); if (!botao) return; const produto = produtos.find(p => p[0] === botao.dataset.nome); const item = carrinho.find(i => i.nome === produto[0]); item ? item.qtd++ : carrinho.push({ nome: produto[0], preco: Number(produto[3].replace(',', '.')), imagem: produto[4], qtd: 1 }); atualizar(); document.querySelector('#carrinho').classList.add('aberto'); document.querySelector('#overlay').classList.add('visivel'); });
+        document.querySelector('#itens-carrinho').addEventListener('click', e => { const botao = e.target.closest('button'); if (!botao) return; const item = carrinho.find(i => i.nome === botao.dataset.nome); if (botao.dataset.acao === 'mais') item.qtd++; if (botao.dataset.acao === 'menos') item.qtd--; if (botao.dataset.acao === 'remover' || item.qtd < 1) carrinho.splice(carrinho.indexOf(item), 1); atualizar(); });
+        const alternarCarrinho = () => { document.querySelector('#carrinho').classList.toggle('aberto'); document.querySelector('#overlay').classList.toggle('visivel'); }; document.querySelector('#abrir-carrinho').onclick = alternarCarrinho; document.querySelector('#fechar-carrinho').onclick = alternarCarrinho; document.querySelector('#overlay').onclick = alternarCarrinho;
+        document.querySelector('#pesquisa-input').oninput = e => renderProdutos(e.target.value); document.querySelector('#finalizar').onclick = () => { document.querySelector('#modal').classList.add('visivel'); document.querySelector('#overlay').classList.add('visivel'); }; document.querySelector('#fechar-modal').onclick = () => { document.querySelector('#modal').classList.remove('visivel'); document.querySelector('#overlay').classList.remove('visivel'); }; document.querySelector('#checkout').onsubmit = e => { e.preventDefault(); alert('Pedido reservado! Obrigado por colecionar com a PokéCards.'); carrinho.length = 0; atualizar(); document.querySelector('#modal').classList.remove('visivel'); document.querySelector('#overlay').classList.remove('visivel'); document.querySelector('#carrinho').classList.remove('aberto'); };
+        renderProdutos(); atualizar();
+    </script>
+</body>
+</html>
